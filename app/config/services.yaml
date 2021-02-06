@@ -29,3 +29,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App.exception_normalizer:
+        class: App\Serializer\ExceptionWrapperHandler
+        autowire: true
+        tags:
+           - { name: serializer.normalizer }
+        arguments: ["@fos_rest.exception.messages_map", false]
