@@ -3,6 +3,8 @@ namespace App\Entity;
 //Used for getting all the users out there or getting one users information all in one go
 //use Doctrine\ORM\Mapp as ORM;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\email;
 /**
  * @ORM\Entity
  * @ORM\Table(name="users")
@@ -15,33 +17,57 @@ class user{
      */
 
     private $id;
-     /**
-     * @ORM\Column(type="string", length=255)
-     */
+    /**
+     * @Assert\NotBlank
+     * @Assert\NotNull
+    * @Assert\Valid
+    * @ORM\Column(type="string", length=255)
+    */
     private $name;
     /**
-     * @ORM\Column(type="boolean", nullable=true, options={"default":0})
+     * @ORM\Column(type="boolean", nullable=false, options={"default":false})
+     * @Assert\NotBlank
+     * @Assert\NotNull
+     * @Assert\Range(min=0,max=1)
+    * @Assert\Valid
      */
-    private $active_status;
+    private $active_status=0;
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * 
+     * @Assert\NotNull
+    * @Assert\Valid
+     * @ORM\Column(type="datetime", nullable=false, options={"default": "CURRENT_TIMESTAMP"})
+     * @ORM\Version
      */
     private $updated_date;
     /**
-     * @ORM\Column(type="datetime")
+     * @Assert\NotNull
+     * @ORM\Column(type="datetime", nullable=false, options={"default": "CURRENT_TIMESTAMP"})
+    * @Assert\Valid
+     * @ORM\Version
      */
     private $created_date;
-
-    function __construct($id,$name,$active_status,$updated_date,$created_date)
-    {
-        $this->id=$id;
-        $this->name=$name;
-        $this->active_status=$active_status;
-        $this->updated_date=$updated_date;
-        $this->created_date=$created_date;
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\email",mappedBy="user_id")
+     */
+    private $emails;//one user id 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\phone",mappedBy="user_id")
+     */
+    private $phonenumbers;
+    function __construct(){
+        $this->updated_date=new \DateTime("now");
+        $this->created_date=new \DateTime("now");
     }
+    /*function __construct($name,$active_status=null,$updated_date=null,$created_date=null)
+    {
+        $this->name=$name;
+        if(!is_null($active_status)) $this->active_status=$active_status;
+        if(!is_null($updated_date)) $this->updated_date=$updated_date;
+        if(!is_null($created_date)) $this->created_date=$created_date;
+    }*/
 
-    public function getId()
+    public function getID()
     {
         return $this->id;
     }
@@ -62,9 +88,20 @@ class user{
         return $this->created_date;
     }
 
-    public function setActiveStatus($val)
+    
+    public function setName(string $val):user
+    {
+        $this->name=$val;
+        return $this;
+    }
+    public function setActiveStatus(?bool $val):user
     {
         $this->active_status=$val;
+        return $this;
+    }
+    public function updated_date($val):user
+    {
+        $this->updated_date=$val;
         return $this;
     }
 }

@@ -28,18 +28,8 @@ class GetData extends AbstractFOSRestController{
         $amt=($this->paramfetcher->get('amount')<1)?1:$this->paramfetcher->get('amount');
         $start=(($this->paramfetcher->get('page')<1)?1:$this->paramfetcher->get('page')-1)*$amt;
     }
-    private function get_params(array $list,$data=[])
+    private function filter_sql(array &$paramx,&$in,&$in2,int $start,int $amt):string
     {
-        foreach($list as $x)
-        {
-            array_push($data,$this->paramfetcher->get($x));
-        }
-        return $data;
-    }
-    
-    private function filter_sql(array &$paramx,&$in,&$in2,$start,$amt):string
-    {
-
         if(is_null($paramx['only'])) return "select JSON_OBJECT('user_id',a.id,'name',a.name,'active_status',active_status,'updated_date',a.updated_date,'created_date',a.created_date,'emails',if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email)))) as result from users a left join user_emails b on a.id=b.user_id".((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"a.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' a.name in ('.$in2.')':'')." group by a.id,a.name,a.updated_date,a.created_date,a.active_status,b.user_id limit ".$start.','.$amt;        
         else {
             $val=['user_id'=>'a.id','name'=>'a.name','active_status'=>'a.active_status','updated_date'=>'a.updated_date','created_date'=>'a.created_date'];//check for emails later manually
@@ -85,8 +75,6 @@ class GetData extends AbstractFOSRestController{
         $this->get_page($start,$amt);
         //$sql="select JSON_OBJECT('user_id',a.id,'name',a.name,'active_status',active_status,'updated_date',a.updated_date,'created_date',a.created_date,'emails',if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email)))) as result from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,a.updated_date,a.created_date,a.active_status,b.user_id limit ".$start.','.$amt;        
         $paramx=$this->paramfetcher->all();
-      //  $db_vals=[];
-       // $db_vals=array_merge($db_vals,$this->tbx->split_generate_placeholders($paramx['id'],$in),$this->tbx->split_generate_placeholders($paramx['name'],$in2));//split and generate placeholders for sql statement
         $sql=$this->filter_sql($paramx,$in,$in2,$start,$amt);
         return $this->handleView($this->view([
             'code'=>0,
@@ -100,24 +88,23 @@ class GetData extends AbstractFOSRestController{
      * @QueryParam(name="amount",requirements={@Assert\Regex("/^\d+$/m"),@Assert\Range(min=1,max=100)},nullable=true,strict=true,allowBlank=false,default=20,description="Amount of results from the page number")
      * @QueryParam(name="name",requirements="^(?:[^,]+,?)+$",nullable=true,default=null,strict=true,allowBlank=false,description="name to get users with")
      * @QueryParam(name="id",requirements={@Assert\Regex("/^(?:\d+,?)+$/m")},strict=true,default=null,allowBlank=false,description="Users to get")
-     * @QueryParam(name="sort",requirements="^(asc|desc)$",nullable=true,strict=true,allowBlank=false,default="asc",description="Sort direction")
+     * @QueryParam(name="sortby",requirements={@Assert\Regex("/^(?:user_id|name|created_date|updated_date|email_amt)$/mi")},nullable=true,strict=true,allowBlank=false,default="user_id",description="Sort by what data")
+     * @QueryParam(name="order",requirements="^(asc|desc)$",nullable=true,strict=true,allowBlank=false,default="asc",description="Sort order")
      * @Get("/user",name="user",methods={"GET"})
      */
     function user()
     {
-        //var_dump('testing here right now');
         $this->get_page($start,$amt);
         $paramx=$this->paramfetcher->all();
         $db_vals=[];
         $db_vals=array_merge($db_vals,$this->tbx->split_generate_placeholders($paramx['id'],$in),$this->tbx->split_generate_placeholders($paramx['name'],$in2));//split and generate placeholders for sql statement
-       $output=$this->tbx->validate_params($this->paramfetcher->all());
+      // $output=$this->tbx->validate_params($this->paramfetcher->all());
       //foreach($output as $x)
       // {
            //var_dump($x->getInvalidValue(),$x->getMessage());
        //}
        //var_dump(count($output));
 //select JSON_OBJECT('name',a.name,'active_status',active_status,'updated_date',a.updated_date,'created_date',a.created_date,'emails',if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))),'id',min(a.id)) as result,count(b.id) as amt from users a left join user_emails b on a.id=b.user_id where amt<3 group by a.name,a.updated_date,a.created_date,a.active_status,b.user_id
-
         
         $sql=$this->filter_sql($paramx,$in,$in2,$start,$amt);
         return $this->handleView($this->view([
@@ -125,7 +112,7 @@ class GetData extends AbstractFOSRestController{
             'Message'=>"",
             //'sql'=>$sql,
            // 'user_str'=>$this->paramfetcher->get('id'),
-            'user'=>$this->tbx->dbcall($sql,$db_vals,1)
+            'users'=>$this->tbx->dbcall($sql,$db_vals,1)
         ]));
     }
    //@Assert\All({@Assert\Range(min=1,max=100),@Assert\Regex("/^\d+$/")})  @Assert\All(@Assert\Range(min=1,max=100))
@@ -143,9 +130,8 @@ class GetData extends AbstractFOSRestController{
         return $this->handleView($this->view([
             'status'=>0,
             'error'=>[],
-            'user'=>$this->tbx->dbcall($sql,[$idx],1)
+            'users'=>$this->tbx->dbcall($sql,[$idx],1)
         ]));
-         //  
     }
 }
 

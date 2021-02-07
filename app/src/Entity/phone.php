@@ -2,6 +2,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapp as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 class phone{
@@ -11,6 +12,13 @@ class phone{
      * @ORM\Column(type="integer",options={"unsigned":true})
      */
     private $id;
+    /**
+     * @Assert\Type(type="integer")
+     * @Assert\Positive
+     * @ORM\ManyToOne(targetEntity="App\Entity\user", inversedBy="emails", cascade={"persist"})
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     */
+    private $user_id;//many to one since it will be many user_ids in the email table attaching to one id inside the user table
     /**
      * @ORM\Column(type="string", length=100)
      */

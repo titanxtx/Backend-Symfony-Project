@@ -2,6 +2,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapp as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 class email{
