@@ -43,62 +43,28 @@ class GetData extends AbstractFOSRestController{
         else {
             $val=['user_id'=>['type'=>0,'data'=>'w.id'],'name'=>['type'=>0,'data'=>'w.name'],'active_status'=>['type'=>0,'data'=>'w.active_status'],
             'updated_date'=>['type'=>0,'data'=>'a.updated_date'],'created_date'=>['type'=>0,'data'=>'a.created_date'],'emails'=>['type'=>1,'data'=>'m.emails','table_alias'=>'r','id'=>'idx','join'=>"(select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc )"],
-            'phone_numbers'=>['type'=>1,'data'=>'m.social','table_alias'=>'s','id'=>'idz','join'=>"(select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc)"],
+            'phone_numbers'=>['type'=>1,'data'=>'m.phone','table_alias'=>'s','id'=>'idz','join'=>"(select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc)"],
             'social_media'=>['type'=>1,'data'=>'m.social','table_alias'=>'t','id'=>'id','join'=>"(select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc)"]];//regular columns   check for join columns emails later manually
             $only=[];
-           // $join_info=['table_alias'=>'m','id'=>'idx'];
-            foreach(explode(',',$paramx['only']) as $x) $only[strtolower($x)]=1;
-
-
-            
+            foreach(explode(',',$paramx['only']) as $x) $only[strtolower($x)]=1;//turning the only parameter value into a associative array
             $joins=[];
-          //  $groupby=[];
             $columns=[];
+            $last_index=null;
             $last_join_id=null;
-            foreach(array_keys($only) as $x)
+            foreach(array_keys($only) as $x)//we are getting the keys of the only parameter
             {
-                //echo "x:{$x}";
                 array_push($columns,"'{$x}',{$val[$x]['data']}");
                  if($val[$x]['type']==1)
                  {
                     array_push($joins,((count($joins)==0)?'select * from ':' left join ').$val[$x]['join']." {$val[$x]['table_alias']}".((!is_null($last_join_id))?" on {$val[$x]['table_alias']}.{$val[$x]['id']}={$last_join_id}":''));
                     $last_join_id="{$val[$x]['table_alias']}.{$val[$x]['id']}";
+                    $last_index=$val[$x]['id'];
                  }
                 
             }
-            $sqlstr= "select (z.result) as result from (select JSON_OBJECT(".implode(',',$columns).") as result from users w ".((!empty($joins))?'left join ('.implode(' ',$joins).") m on {$last_join_id}=w.id":'').' '.((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by w.id asc limit {$start},{$amt}".') z';
+            $sqlstr= "select (z.result) as result from (select JSON_OBJECT(".implode(',',$columns).") as result from users w ".((!empty($joins))?'left join ('.implode(' ',$joins).") m on m.{$last_index}=w.id":'').' '.((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by w.id asc limit {$start},{$amt}".') z';
            // var_dump($sqlstr);
             return $sqlstr;
-
-         /*   //foreach(['emails',])
-            if(array_key_exists('emails',$only))
-            {
-                foreach(array_keys($val) as $z)
-                {
-                    if(array_key_exists($z,$only)){
-                        array_push($columns,"'{$z}',{$val[$z]}");
-                        array_push($groupby,$val[$z]);
-                    }
-                }
-            }
-            else{
-                foreach(array_keys($val) as $z){
-                    if(array_key_exists($z,$only)){
-                        array_push($columns,"'{$z}',{$val[$z]}");
-                    }
-                }
-            }
-            if(array_key_exists('emails',$only)){
-                array_push($columns,"'emails',if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email)))");
-                array_push($joins,'left join user_emails b on a.id=b.user_id');
-                array_push($groupby,'b.user_id');
-            }
-            if(array_key_exists('phonenumbers',$only)){
-                array_push($columns,"'emails',if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email)))");
-                array_push($joins,'left join user_emails b on a.id=b.user_id');
-                array_push($groupby,'b.user_id');
-            }
-            return "select JSON_OBJECT(".implode(',',$columns).") as result from users a ".implode(' ',$joins).((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"a.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' a.name in ('.$in2.')':'')." ".((!empty($groupby))?'group by '.implode(',',$groupby):'')." limit ".$start.','.$amt;      */
         }
     }
     /**
@@ -133,7 +99,7 @@ class GetData extends AbstractFOSRestController{
         
     }
     /**
-     * @QueryParam(name="only",requirements={@Assert\Regex("/^(?:(?:user_id|name|active_status|emails|email_id|email_address|updated_date|created_date),?)+$/mi")},nullable=true,strict=true,allowBlank=false,default=null,description="Page number of the result")
+     * @QueryParam(name="only",requirements={@Assert\Regex("/^(?:(?:user_id|name|active_status|emails|email_id|email_address|phone_numbers|social_media|updated_date|created_date),?)+$/mi")},nullable=true,strict=true,allowBlank=false,default=null,description="Page number of the result")
      * @QueryParam(name="page",requirements={@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,strict=true,allowBlank=false,default=1,description="Page number of the result")
      * @QueryParam(name="amount",requirements={@Assert\Regex("/^\d+$/m"),@Assert\Range(min=1,max=100)},nullable=true,strict=true,allowBlank=false,default=20,description="Amount of results from the page number")
      * @QueryParam(name="name",requirements="^(?:[^,]+,?)+$",nullable=true,default=null,strict=true,allowBlank=false,description="name to get users with")
