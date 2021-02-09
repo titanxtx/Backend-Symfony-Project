@@ -5,6 +5,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\email;
+use App\Entity\phone;
+use App\Entity\socialmedia;
 /**
  * @ORM\Entity
  * @ORM\Table(name="users")
@@ -47,14 +49,7 @@ class user{
      * @ORM\Version
      */
     private $created_date;
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\email",mappedBy="user_id")
-     */
-    private $emails;//one user id 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\phone",mappedBy="user_id")
-     */
-    private $phonenumbers;
+
     function __construct(){
         $this->updated_date=new \DateTime("now");
         $this->created_date=new \DateTime("now");
@@ -104,6 +99,22 @@ class user{
         $this->updated_date=$val;
         return $this;
     }
+    /*
+    public function setEmails($val):user
+    {
+        $this->emails=$val;
+        return $this;
+    }
+    public function setPhoneNumbers($val):user
+    {
+        $this->phonenumbers=$val;
+        return $this;
+    }
+    public function setSocialMedia($val):user
+    {
+        $this->socialmedia=$val;
+        return $this;
+    }*/
 }
 
 

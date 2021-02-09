@@ -10,8 +10,8 @@ fos_rest: #null
         formats:
             json: true
     exception: 
-        enabled: true
-        serializer_error_renderer: true
+      #  enabled: true
+       # serializer_error_renderer: true
        # exception_controller: 'fos_rest.exception.controller:showAction'
      #   codes:
      #     'Symfony\Component\Routing\Exception\ResourceNotFoundException': 404

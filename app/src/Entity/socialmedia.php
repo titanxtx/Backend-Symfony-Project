@@ -1,34 +1,99 @@
 <?php
 namespace App\Entity;
 
-use Doctrine\ORM\Mapp as ORM;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
-class email{
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="user_socialmedia")
+ */
+class socialmedia{
     /**
      * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer",options={"unsigned":true})
+     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(type="integer",nullable=false,options={"unsigned":true})
      */
     private $id;
     /**
-     * @ORM\Column(type="string", length=320)
+     * 
+     * @Assert\NotNull
+     * @Assert\NotBlank
+     * @ORM\Column(type="integer",nullable=false,options={"unsigned":true})
+     * @Assert\Type(type="integer")
+     * @Assert\Positive
+    * @Assert\Valid
+     * 
      */
-    private $socialmedia;
+    private $user_id;//@ORM\ManyToOne(targetEntity="App\Entity\user", inversedBy="emails", cascade={"persist"})   @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+    /**
+     * @ORM\Column(type="boolean", nullable=true, options={"default":false})
+     * @Assert\NotBlank
+     * @Assert\NotNull
+     * @Assert\Range(min=0,max=1)
+    * @Assert\Valid
+     */
+    private $facebook=0;
+    /**
+     * @ORM\Column(type="boolean", nullable=true, options={"default":false})
+     * @Assert\NotBlank
+     * @Assert\NotNull
+     * @Assert\Range(min=0,max=1)
+    * @Assert\Valid
+     */
+    private $twitter=0;
+    /**
+     * @ORM\Column(type="boolean", nullable=true, options={"default":false})
+     * @Assert\NotBlank
+     * @Assert\NotNull
+     * @Assert\Range(min=0,max=1)
+    * @Assert\Valid
+     */
+    private $instagram=0;
+    /**
+     * @Assert\NotNull
+     * @Assert\NotBlank
+     * @Assert\Url
+     * @Assert\Valid
+     * @ORM\Column(type="string",nullable=false, length=2083)
+     */
+    private $link;
 
     public function getId(){
         return  $this->id;
     }
-    public function setId($val){
-        $this->id=$val;
-    }
-    public function getEmail():string
+    
+    public function getUserID():string
     {
-        return $this->email;
+        return $this->user_id;
     }
-    public function setEmail($val)
+    public function setUserID($val):socialmedia
     {
-        $this->email=$val;
+        $this->user_id=$val;
+        return $this;
+    }
+    public function setFacebook($val):socialmedia
+    {
+        $this->facebook=$val;
+        return $this;
+    }
+    public function setTwitter($val):socialmedia
+    {
+        $this->twitter=$val;
+        return $this;
+    }
+    public function setInstagram($val):socialmedia
+    {
+        $this->instagram=$val;
+        return $this;
+    }
+    public function getLink():string
+    {
+        return $this->link;
+    }
+    public function setLink($val):socialmedia
+    {
+        $this->link=$val;
+        return $this;
     }
 }
