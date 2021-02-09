@@ -25,25 +25,52 @@ class DeleteData extends AbstractFOSRestController{
 
     private $tbx;
     private $paramfetcher;
-  //  private $entityManager;
     function __construct(toolbox $tb, ParamFetcherInterface $paramfetcher){
         $this->tbx=$tb;
         $this->paramfetcher=$paramfetcher;
-        //$this->entityManager=$this->getDoctrine()->getManager();
+    }
+    private function delete_db($tb,$id)
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $element = $entityManager->getRepository($tb)->find($id);
+
+        if (!$element) {
+            throw new HttpException(400, "id {$id} is invalid");
+        }
+        $entityManager->remove($element);
+        $entityManager->flush();
     }
     /**
-     * @QueryParam(name="user_id",requirements={@Assert\NotBlank,@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,default=NULL,strict=true,allowBlank=false,description="name to get users with")
-     * @QueryParam(name="type",requirements={@Assert\Regex("/^(?:user|email|phone|social)$/mi")},nullable=true,default="user",strict=false,allowBlank=false,description="name to get users with")
-     * @QueryParam(name="name",requirements={@Assert\NotBlank},nullable=true,default=NULL,strict=false,allowBlank=false,description="name to get users with")
-     * @QueryParam(name="active_status",requirements="^(?:0|1)$",nullable=true,default=0,strict=false,allowBlank=false,description="Active or not")
-     * @QueryParam(name="email",requirements={@Assert\NotBlank,@Assert\NotNull,@Assert\Email},nullable=true,default=NULL,strict=false,allowBlank=false,description="name to get users with")
-     * @QueryParam(name="phone",requirements={@Assert\NotBlank},nullable=true,default=NULL,strict=false,allowBlank=false,description="name to get users with")
-     * @QueryParam(name="social_type",requirements={@Assert\NotBlank,@Assert\NotNull,@Assert\Regex("/^(?:facebook|twitter|instagram)$/mi")},nullable=true,default=NULL,strict=false,allowBlank=false,description="name to get users with")
-     * @QueryParam(name="social_link",requirements={@Assert\NotBlank,@Assert\NotNull,@Assert\Url},nullable=true,default=NULL,strict=false,description="name to get users with")
-     * @Get("/replace",name="user_post")
+     * @QueryParam(name="type",requirements={@Assert\Regex("/^(?:user|email|phone|social)$/mi")},nullable=true,default="user",strict=true,allowBlank=false,description="What area to update")
+     * @QueryParam(name="type_id",requirements={@Assert\NotBlank,@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,default="user",strict=true,allowBlank=false,description="ID number of the type")
+     * @Get("/delete",name="delete_data")
      */
-    public function replace()
+    public function delete()
     {
-
+        $msg="";
+        if(strtolower($this->paramfetcher->get('type'))=="user")
+        {
+            $this->delete_db('App\Entity\user',$this->paramfetcher->get('type_id'));
+            $msg="Success: User was deleted";
+        }
+        else if(strtolower($this->paramfetcher->get('type'))=="email")
+        {
+            $this->delete_db('App\Entity\email',$this->paramfetcher->get('type_id'));
+            $msg="Success: Email has been deleted";
+        }
+        else if(strtolower($this->paramfetcher->get('type'))=="phone")
+        {
+            $this->delete_db('App\Entity\phonenumber',$this->paramfetcher->get('type_id'));
+            $msg="Success: Phone number has been deleted";
+        }
+        else if(strtolower($this->paramfetcher->get('type'))=="social")
+        {
+            $this->delete_db('App\Entity\socialmedia',$this->paramfetcher->get('type_id'));
+            $msg="Success: Social media has been deleted";
+        }
+        return $this->handleView($this->view([
+            'code'=>200,
+            'Message'=>$msg
+        ]));
     }
 }
