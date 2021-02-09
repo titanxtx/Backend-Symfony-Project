@@ -67,6 +67,28 @@ class socialmedia{
     {
         return $this->user_id;
     }
+    public function getFacebook():bool
+    {
+        return $this->facebook;
+    }
+    public function getTwitter():bool
+    {
+        return $this->twitter;
+    }
+    public function getInstagram():bool
+    {
+        return $this->instagram;
+    }
+    public function getSocialType():string{
+        if($this->instagram==1) return 'Instagram';
+        return ($this->Facebook==1)?'Facebook':'Twitter';
+    }
+    public function getLink():string
+    {
+        return $this->link;
+    }
+
+
     public function setUserID($val):socialmedia
     {
         $this->user_id=$val;
@@ -86,10 +108,6 @@ class socialmedia{
     {
         $this->instagram=$val;
         return $this;
-    }
-    public function getLink():string
-    {
-        return $this->link;
     }
     public function setLink($val):socialmedia
     {

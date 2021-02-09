@@ -11,8 +11,8 @@ use FOS\RestBundle\Request\ParamFetcherInterface;
 use FOS\RestBundle\Controller\Annotations\View;
 use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Post;
+use FOS\RestBundle\Controller\Annotations\Put;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use App\Service\toolbox;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,14 +22,9 @@ use App\Entity\phonenumber;
 use App\Entity\socialmedia;
 
 class ReplaceData extends AbstractFOSRestController{
-
-    private $tbx;
     private $paramfetcher;
-  //  private $entityManager;
-    function __construct(toolbox $tb, ParamFetcherInterface $paramfetcher){
-        $this->tbx=$tb;
+    function __construct(ParamFetcherInterface $paramfetcher){
         $this->paramfetcher=$paramfetcher;
-        //$this->entityManager=$this->getDoctrine()->getManager();
     }
 
     private function update_db($tb,$id,$func)
@@ -39,13 +34,10 @@ class ReplaceData extends AbstractFOSRestController{
 
         if (!$element) {
             throw new HttpException(400, "id {$id} is invalid");
-           // throw $this->createNotFoundException(
-          //      "id {$id} is invalid"
-           // );
         }
         $func($element);
-        //$element->setName('New product name!');
         $entityManager->flush();
+        $entityManager->clear();
     }
     /**
      * @QueryParam(name="type",requirements={@Assert\Regex("/^(?:user|email|phone|social)$/mi")},nullable=true,default="user",strict=true,allowBlank=false,description="What area to update")
@@ -56,7 +48,7 @@ class ReplaceData extends AbstractFOSRestController{
      * @QueryParam(name="phone",requirements={@Assert\NotBlank},nullable=true,default=NULL,strict=false,allowBlank=false,description="phone number")
      * @QueryParam(name="social_type",requirements={@Assert\NotBlank,@Assert\NotNull,@Assert\Regex("/^(?:facebook|twitter|instagram)$/mi")},nullable=true,default=NULL,strict=false,allowBlank=false,description="Social media type")
      * @QueryParam(name="social_link",requirements={@Assert\NotBlank,@Assert\NotNull,@Assert\Url},nullable=true,default=NULL,strict=false,description="Social media link")
-     * @get("/update",name="update_data")
+     * @Put("/",name="update_data")
      */
     public function update()
     {
@@ -64,36 +56,39 @@ class ReplaceData extends AbstractFOSRestController{
         $type=strtolower($this->paramfetcher->get('type'));
         if($type=="user")
         {
-            if($this->paramfetcher->get('type_id')=="") throw new HttpException(400, "type_id parameter not set or invalid");
-            if($this->paramfetcher->get('name')==""&&$this->paramfetcher->get('active_status')=="") throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
+            if(empty($this->paramfetcher->get('name'))&&empty($this->paramfetcher->get('active_status'))) throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
             $this->update_db('App\Entity\user',$this->paramfetcher->get('type_id'),function(&$element){
                 if($this->paramfetcher->get('name')!="") $element->setName($this->paramfetcher->get('name'));
                 if($this->paramfetcher->get('active_status')!="") $element->setActiveStatus($this->paramfetcher->get('active_status'));
+                $element->setUpdatedDate(new \DateTime("now"));
             });
             $msg="Success: User was updated";
         }
         else if($type=="email")
         {
-            if($this->paramfetcher->get('type_id')=="") throw new HttpException(400, "type_id parameter not set or invalid");
-            if($this->paramfetcher->get('email')=="") throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
+            if(empty($this->paramfetcher->get('email'))) throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
             $this->update_db('App\Entity\email',$this->paramfetcher->get('type_id'),function(&$element){
                 $element->setEmail($this->paramfetcher->get('email'));
+                $this->update_db('App\Entity\user',$element->getUserID,function(&$element){
+                    $element->setUpdatedDate(new \DateTime("now"));
+                });
             });
             $msg="Success: Email has been updated";
         }
         else if($type=="phone")
         {
-            if($this->paramfetcher->get('type_id')=="") throw new HttpException(400, "type_id parameter not set or invalid");
-            if($this->paramfetcher->get('phone')=="") throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
+            if(empty($this->paramfetcher->get('phone'))) throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
             $this->update_db('App\Entity\phonenumber',$this->paramfetcher->get('type_id'),function(&$element){
                 $element->setPhone($this->paramfetcher->get('phone'));
+                $this->update_db('App\Entity\user',$element->getUserID,function(&$element){
+                    $element->setUpdatedDate(new \DateTime("now"));
+                });
             });
             $msg="Success: Phone number has been updated";
         }
         else if($type=="social")
         {
-            if($this->paramfetcher->get('type_id')=="") throw new HttpException(400, "type_id parameter not set or invalid");
-            if($this->paramfetcher->get('social_type')==""&&$this->paramfetcher->get('social_link')=="") throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
+            if(empty($this->paramfetcher->get('social_type'))&&empty($this->paramfetcher->get('social_link'))) throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
             $this->update_db('App\Entity\socialmedia',$this->paramfetcher->get('type_id'),function(&$element){
                 if(strtolower($this->paramfetcher->get('social_type'))=="facebook")
                 {
@@ -112,6 +107,9 @@ class ReplaceData extends AbstractFOSRestController{
                     $element->setInstagram(1);
                 }
                 $element->setLink($this->paramfetcher->get('social_link'));
+                $this->update_db('App\Entity\user',$element->getUserID,function(&$element){
+                    $element->setUpdatedDate(new \DateTime("now"));
+                });
             });
             $msg="Success: Social media has been updated";
         }

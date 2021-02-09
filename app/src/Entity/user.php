@@ -94,7 +94,7 @@ class user{
         $this->active_status=$val;
         return $this;
     }
-    public function updated_date($val):user
+    public function setUpdatedDate($val):user
     {
         $this->updated_date=$val;
         return $this;

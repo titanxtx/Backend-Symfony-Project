@@ -11,6 +11,7 @@ use FOS\RestBundle\Request\ParamFetcherInterface;
 use FOS\RestBundle\Controller\Annotations\View;
 use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Post;
+use FOS\RestBundle\Controller\Annotations\Delete;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use App\Service\toolbox;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -41,9 +42,9 @@ class DeleteData extends AbstractFOSRestController{
         $entityManager->flush();
     }
     /**
-     * @QueryParam(name="type",requirements={@Assert\Regex("/^(?:user|email|phone|social)$/mi")},nullable=true,default="user",strict=true,allowBlank=false,description="What area to update")
-     * @QueryParam(name="type_id",requirements={@Assert\NotBlank,@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,default="user",strict=true,allowBlank=false,description="ID number of the type")
-     * @Get("/delete",name="delete_data")
+     * @QueryParam(name="type",requirements={@Assert\Regex("/^(?:user|email|phone|social)$/mi")},default="user",strict=true,allowBlank=false,description="What area to delete")
+     * @QueryParam(name="type_id",requirements={@Assert\NotBlank,@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},default="user",strict=true,allowBlank=false,description="ID number of the type you want to delete")
+     * @Delete("/delete",name="delete_data")
      */
     public function delete()
     {
