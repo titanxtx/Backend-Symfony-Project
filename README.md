@@ -3,7 +3,7 @@
 ### Get Request
 #### Get user information
 ###### Parameters
- <pre>only parameter applied only to type=user -  pagination is for type=users only right now</pre>\
+ <pre>only parameter applies only to type=user -  pagination is for type=users only right now</pre>
  <pre>
  <b>type=</b> user or email or phone or social
  <b>type_id=</b> Any id of type's table  Many can be selected at once like type_id=1,2,3,4,5 or just type_id=1
