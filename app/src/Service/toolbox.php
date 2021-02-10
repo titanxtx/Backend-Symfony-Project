@@ -31,11 +31,12 @@ class toolbox {
             'email'=>[new Assert\NotNull(),new Assert\NotBlank(),new Assert\Email(['message'=>'The email "{{ value }}" is not a valid email.'])]
         ],'allowMissingFields'=>true,'allowExtraFields'=>false]);
     }
-    public function dbcall($sql,$args=[],$mode=0,$code=null)//call the database here, get the information and decode the json
+    public function dbcall($sql,$args=[],&$empty,$mode=0,$code=null)//call the database here, get the information and decode the json
     {
         try{
             $statement=$this->connection->prepare($sql);
             $statement->execute($args);
+            if($statement->rowCount()==0) $empty=true;
             if($mode==1) return $this->getJSONData($statement);//json mode
             else if($mode==2) return $statement->fetchAll();
             return ($code!=null)?$code($statement):$statement;

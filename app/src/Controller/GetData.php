@@ -2,15 +2,9 @@
 namespace App\Controller;
 
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
-
 use FOS\RestBundle\Request\ParamFetcherInterface;
-use FOS\RestBundle\Controller\Annotations\View;
 use FOS\RestBundle\Controller\Annotations\Get;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use App\Service\toolbox;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -100,21 +94,22 @@ class GetData extends AbstractFOSRestController{
             $db_vals=[];
             $in=null;
             $in2=null;
+            $empty=false;
             if(!empty($paramx['type_id'])) $db_vals=array_merge($db_vals,$this->tbx->split_generate_placeholders($paramx['type_id'],$in));//split and generate placeholders for sql statement   'user_id'
             if(!empty($paramx['name']))  $db_vals=array_merge($db_vals,$this->tbx->split_generate_placeholders($paramx['name'],$in2));
             $sql=$this->filter_sql($paramx,$in,$in2,$start,$amt);
-            $data=$this->tbx->dbcall($sql,$db_vals,1);
+            $data=$this->tbx->dbcall($sql,$db_vals,$empty,1);
             if(!is_null($data))
             {
                 return $this->handleView($this->view([
-                    'code'=>200,
-                    'Message'=>"Success",
+                    'code'=>($empty)?404:200,
+                    'Message'=>($empty)?'No Results':"Success",
                     'data'=>$data
                 ]));
             }
             else{
                 return $this->handleView($this->view([
-                    'code'=>400,
+                    'code'=>500,
                     'Message'=>"Failed",
                     'data'=>[]
                 ]));

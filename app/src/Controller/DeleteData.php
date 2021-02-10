@@ -2,32 +2,20 @@
 namespace App\Controller;
 
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
 
 use FOS\RestBundle\Request\ParamFetcherInterface;
-use FOS\RestBundle\Controller\Annotations\View;
-use FOS\RestBundle\Controller\Annotations\Get;
-use FOS\RestBundle\Controller\Annotations\Post;
 use FOS\RestBundle\Controller\Annotations\Delete;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use App\Service\toolbox;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\user;
 use App\Entity\email;
 use App\Entity\phonenumber;
 use App\Entity\socialmedia;
 
 class DeleteData extends AbstractFOSRestController{
-
-    private $tbx;
     private $paramfetcher;
-    function __construct(toolbox $tb, ParamFetcherInterface $paramfetcher){
-        $this->tbx=$tb;
+    function __construct(ParamFetcherInterface $paramfetcher){
         $this->paramfetcher=$paramfetcher;
     }
     private function delete_db($tb,$id)
