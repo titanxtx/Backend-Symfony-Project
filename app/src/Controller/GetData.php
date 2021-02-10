@@ -182,22 +182,22 @@ class GetData extends AbstractFOSRestController{
  * Get multiple users information but only certain things from them   -- with pagination--
  * http://localhost:8080/?type=user&type_id=1,2,3,4&only=name,user_id,emails&page=1&amount=2
  * 
- * Get a email from a email id
+ * Get a email with a email id
  * http://localhost:8080/?type=email&type_id=2
  * 
- * Get many emails from a email id
+ * Get many emails 
  * http://localhost:8080/?type=email&type_id=1,2,3
  * 
- * Get a phone number from a email id
+ * Get a phone number
  * http://localhost:8080/?type=phone&type_id=2
  * 
- * Get many phone number from a email id
+ * Get many phone numbers
  * http://localhost:8080/?type=phone&type_id=1,2,3
  * 
- * Get a socialmedia from a email id
+ * Get a socialmedia
  * http://localhost:8080/?type=social&type_id=2
  * 
- * Get many socialmedia from a email id
+ * Get many socialmedias
  * http://localhost:8080/?type=social&type_id=1,2,3
  * 
  */
