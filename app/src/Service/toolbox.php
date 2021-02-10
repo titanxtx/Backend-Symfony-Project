@@ -1,13 +1,5 @@
 <?php
 namespace App\Service;
-//use Doctrine\ORM\Query\ResultSetMapping;
-
-use Doctrine\ORM\Query\ResultSetMapping;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\Setup;
-use Doctrine\DBAL\Query\QueryBuilder;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
