@@ -3,6 +3,7 @@ namespace App\Service;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\DBALException;
@@ -35,6 +36,7 @@ class toolbox {
         }
         catch(DBALException $e)
         {
+            throw new HttpException(500, "Internal Server Error");
             return null;
         }
     }

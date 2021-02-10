@@ -27,7 +27,7 @@ class GetData extends AbstractFOSRestController{
         $element = $entityManager->getRepository($tb)->find($id);
 
         if (!$element) {
-            throw new HttpException(400, "id {$id} is invalid");
+            throw new HttpException(404, "id {$id} is invalid");
         }
         $func($element);
         $entityManager->flush();
@@ -76,8 +76,8 @@ class GetData extends AbstractFOSRestController{
      * @QueryParam(name="page",requirements={@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,strict=true,allowBlank=false,default=1,description="Page number of the result - 1 or more acceptable")
      * @QueryParam(name="amount",requirements={@Assert\Regex("/^\d+$/m"),@Assert\Range(min=1,max=200)},nullable=true,strict=true,allowBlank=false,default=20,description="Amount of results from the page number - minimum=1 maximum=200")
      * @QueryParam(name="name",requirements="^(?:[^,]+,?)+$",nullable=true,default=null,strict=true,allowBlank=false,description="name to get users with")
-     * @QueryParam(name="sortby",requirements={@Assert\Regex("/^(?:user_id|name|created_date|updated_date|email_amt|phone_amt|social_amt)$/mi")},nullable=true,strict=true,allowBlank=false,default="user_id",description="Sort by what data")
-     * @QueryParam(name="order",requirements="^(asc|desc)$",nullable=true,strict=true,allowBlank=false,default="asc",description="Sort order ascending or descending")
+     * @QueryParam(name="sortby",requirements={@Assert\Regex("/^(?:user_id|name|created_date|updated_date|email_amt|phone_amt|social_amt)$/mi")},nullable=true,strict=true,allowBlank=false,default="user_id",description="Result - Sort by what data")
+     * @QueryParam(name="order",requirements="^(asc|desc)$",nullable=true,strict=true,allowBlank=false,default="asc",description="Result Sort order ascending or descending")
      * @Get("/",name="get_info",methods={"GET"})
      */
     public function get_alldata()//get any data from the tables in the database. A mix of dbal queries and doctrine ORM for stuff other than the users
