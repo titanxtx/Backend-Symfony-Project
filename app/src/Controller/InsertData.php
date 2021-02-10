@@ -25,11 +25,9 @@ class InsertData extends AbstractFOSRestController{
 
     private $tbx;
     private $paramfetcher;
-  //  private $entityManager;
     function __construct(toolbox $tb, ParamFetcherInterface $paramfetcher){
         $this->tbx=$tb;
         $this->paramfetcher=$paramfetcher;
-        //$this->entityManager=$this->getDoctrine()->getManager();
     }
     private function insert_any($obj)
     {
@@ -72,8 +70,6 @@ class InsertData extends AbstractFOSRestController{
         {
             if(empty($this->paramfetcher->get('email'))) throw new HttpException(400, "email parameter not set or invalid");
             if(empty($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set or invalid");
-            //if(is_null($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set or invalid");
-            //if(is_null($this->paramfetcher->get('email'))) throw new HttpException(400, "email parameter not set or invalid");
             $this->insert_any((new email())->setEmail($this->paramfetcher->get('email'))->setUserID($this->paramfetcher->get('user_id')));
             $msg="Success: Email has been added";
         }
@@ -96,7 +92,7 @@ class InsertData extends AbstractFOSRestController{
             $msg="Success: Social media has been added";
         }
             
-        return $this->handleView($this->view([
+        return $this->handleView($this->view([//return the information for viewing
             'code'=>200,
             'Message'=>$msg
         ]));

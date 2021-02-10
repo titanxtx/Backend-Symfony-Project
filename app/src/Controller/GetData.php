@@ -23,11 +23,11 @@ use App\Entity\socialmedia;
 class GetData extends AbstractFOSRestController{
     private $tbx;
     private $paramfetcher;
-    function __construct(toolbox $tb, ParamFetcherInterface $paramfetcher){
+    function __construct(toolbox $tb, ParamFetcherInterface $paramfetcher){//get the parameters from fosrestbundle and our toolbox service
         $this->tbx=$tb;
         $this->paramfetcher=$paramfetcher;
     }
-    private function get_db($tb,$id,$func)
+    private function get_db($tb,$id,$func)//use ORM for basic things like creating,some basic reading,updating, and deleting.
     {
         $entityManager = $this->getDoctrine()->getManager();
         $element = $entityManager->getRepository($tb)->find($id);
@@ -122,7 +122,7 @@ class GetData extends AbstractFOSRestController{
         }
         else{
             if(empty($this->paramfetcher->get('type_id'))) throw new HttpException(400, "type_id is invalid or not present");
-            $output=['code'=>200,'Message'=>"Success",'data'=>null];
+            $output=['code'=>200,'Message'=>"Success",'data'=>null];//default variable information
             $ids=explode(',',$this->paramfetcher->get('type_id'));//get multiple ids of any email in the table
             if($type=='email')//Get emails
             {
