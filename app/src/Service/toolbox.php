@@ -18,7 +18,7 @@ class toolbox {
     private $connection;
     private $validator;
     private $constraint_data;
-    function __construct(Connection $connection)
+    function __construct(Connection $connection) //importing our database connection
     {
         $this->connection=$connection;
         $this->validator=Validation::createValidator();

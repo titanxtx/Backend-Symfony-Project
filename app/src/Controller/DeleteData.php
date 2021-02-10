@@ -44,7 +44,7 @@ class DeleteData extends AbstractFOSRestController{
     /**
      * @QueryParam(name="type",requirements={@Assert\Regex("/^(?:user|email|phone|social)$/mi")},default="user",strict=true,allowBlank=false,description="What area to delete")
      * @QueryParam(name="type_id",requirements={@Assert\NotBlank,@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},default="user",strict=true,allowBlank=false,description="ID number of the type you want to delete")
-     * @Delete("/delete",name="delete_data")
+     * @Delete("/",name="delete_data")
      */
     public function delete()
     {

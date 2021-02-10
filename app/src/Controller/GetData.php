@@ -67,13 +67,12 @@ class GetData extends AbstractFOSRestController{
                         $last_join_id="{$val[$x]['table_alias']}.{$val[$x]['id']}";
                         $last_index=$val[$x]['id'];
                     }
-                    
                 }
                 $sqlstr= "select JSON_OBJECT(".implode(',',$columns).") as result from users w ".((!empty($joins))?'left join ('.implode(' ',$joins).") m on m.{$last_index}=w.id":'').' '.((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$amt}";
                 return $sqlstr;
             }
     }
-    private function get_tableinformation($ids,$func)
+    private function get_tableinformation($ids,$func)//just makes it cleaner to have it here than 3 or 4 times other places. Just pushing data into a array from the database and returning it for it to be saved 
     {
         $data=[];
         foreach($ids as $id) array_push($data,$func($id));

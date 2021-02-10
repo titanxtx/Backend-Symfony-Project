@@ -48,56 +48,50 @@ class InsertData extends AbstractFOSRestController{
      * @QueryParam(name="phone",requirements={@Assert\NotBlank},nullable=true,default=NULL,strict=false,allowBlank=false,description="name to get users with")
      * @QueryParam(name="social_type",requirements={@Assert\NotBlank,@Assert\NotNull,@Assert\Regex("/^(?:facebook|twitter|instagram)$/mi")},nullable=true,default=NULL,strict=false,allowBlank=false,description="name to get users with")
      * @QueryParam(name="social_link",requirements={@Assert\NotBlank,@Assert\NotNull,@Assert\Url},nullable=true,default=NULL,strict=false,description="name to get users with")
-     * @Get("/new",name="user_post")
+     * @Post("/",name="user_post")
      */
     public function insert_data()//insert data into the database
     {
         $msg="";
-        if(strtolower($this->paramfetcher->get('type'))=="user")//inserting a new user here inside
+        $type=strtolower($this->paramfetcher->get('type'));
+        if($type=="user")//inserting a new user here inside
         {
-            if(empty($this->paramfetcher->get('name'))) throw new HttpException(400, "Name parameter not set");
-            
+            if(empty($this->paramfetcher->get('name'))) throw new HttpException(400, "Name parameter not set or invalid");
+            if(!empty($this->paramfetcher->get('social_link'))&&empty($this->paramfetcher->get('social_type'))) throw new HttpException(400, "social_type parameter not set or invalid");
+            else if(!empty($this->paramfetcher->get('social_type'))&&empty($this->paramfetcher->get('social_link'))) throw new HttpException(400, "social_link parameter not set or invalid");
             $temp_user=(new user())->setName($this->paramfetcher->get('name'));
-
+            
             if(!empty($this->paramfetcher->get('active_status'))) $temp_user->setActiveStatus($this->paramfetcher->get('active_status')); 
             $user=$this->insert_any($temp_user);
             if(!empty($this->paramfetcher->get('email'))) $this->insert_any((new email())->setEmail($this->paramfetcher->get('email'))->setUserID($user->getID()));
             if(!empty($this->paramfetcher->get('phone'))) $this->insert_any((new phonenumber())->setPhone($this->paramfetcher->get('phone'))->setUserID($user->getID()));
-            if(!empty($this->paramfetcher->get('social_link')))
-            {
-                if(empty($this->paramfetcher->get('social_type'))) throw new HttpException(400, "social_type parameter not set");
-                $this->insert_any((new socialmedia())->setLink($this->paramfetcher->get('social_link'))->setUserID($user->getID()));
-            }
+            if(!empty($this->paramfetcher->get('social_link'))) $this->insert_any((new socialmedia())->setSocialType($this->paramfetcher->get('social_type'))->setLink($this->paramfetcher->get('social_link'))->setUserID($user->getID()));
             $msg="Success: ".$user->getName()." was saved";
         }
-        else if(strtolower($this->paramfetcher->get('type'))=="email")//inserting a new email information
+        else if($type=="email")//inserting a new email information
         {
-            if(empty($this->paramfetcher->get('email'))) throw new HttpException(400, "email parameter not set");
-            if(empty($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set");
-            //if(is_null($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set");
-            //if(is_null($this->paramfetcher->get('email'))) throw new HttpException(400, "email parameter not set");
+            if(empty($this->paramfetcher->get('email'))) throw new HttpException(400, "email parameter not set or invalid");
+            if(empty($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set or invalid");
+            //if(is_null($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set or invalid");
+            //if(is_null($this->paramfetcher->get('email'))) throw new HttpException(400, "email parameter not set or invalid");
             $this->insert_any((new email())->setEmail($this->paramfetcher->get('email'))->setUserID($this->paramfetcher->get('user_id')));
             $msg="Success: Email has been added";
         }
-        else if(strtolower($this->paramfetcher->get('type'))=="phone")//inserting a new phone number
+        else if($type=="phone")//inserting a new phone number
         {
-            if(empty($this->paramfetcher->get('phone'))) throw new HttpException(400, "phone parameter not set");
-            if(empty($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set");
+            if(empty($this->paramfetcher->get('phone'))) throw new HttpException(400, "phone parameter not set or invalid");
+            if(empty($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set or invalid");
             $tmp=(new phonenumber())->setPhone($this->paramfetcher->get('phone'))->setUserID($this->paramfetcher->get('user_id'));
             $this->insert_any($tmp);
             $msg="Success: Phone number has been added";
         }
-        else if(strtolower($this->paramfetcher->get('type'))=="social")//insert new social media information
+        else if($type=="social")//insert new social media information
         {
-            if(empty($this->paramfetcher->get('social_type'))) throw new HttpException(400, "social_type parameter not set");
-            if(empty($this->paramfetcher->get('social_link'))) throw new HttpException(400, "social_link parameter not set");
-            if(empty($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set");
+            if(empty($this->paramfetcher->get('social_type'))) throw new HttpException(400, "social_type parameter not set or invalid");
+            if(empty($this->paramfetcher->get('social_link'))) throw new HttpException(400, "social_link parameter not set or invalid");
+            if(empty($this->paramfetcher->get('user_id'))) throw new HttpException(400, "user_id parameter not set or invalid");
 
-            $tmp=(new socialmedia())->setLink($this->paramfetcher->get('social_link'))->setUserID($this->paramfetcher->get('user_id'));
-            if(strtolower($this->paramfetcher->get('social_type'))=="facebook") $tmp=$tmp->setFacebook(1);
-            else if(strtolower($this->paramfetcher->get('social_type'))=="twitter") $tmp=$tmp->setTwitter(1);
-            else if(strtolower($this->paramfetcher->get('social_type'))=="instagram") $tmp=$tmp->setInstagram(1);
-            else throw new HttpException(400, "social_type parameter not set");
+            $tmp=(new socialmedia())->setSocialType($this->paramfetcher->get('social_type'))->setLink($this->paramfetcher->get('social_link'))->setUserID($this->paramfetcher->get('user_id'));
             $this->insert_any($tmp);
             $msg="Success: Social media has been added";
         }

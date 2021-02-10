@@ -88,7 +88,14 @@ class socialmedia{
         return $this->link;
     }
 
-
+    public function setSocialType($val):socialmedia
+    {
+        $tmp=strtolower($val);
+        if($tmp=='facebook') $this->setFacebook(1);
+        else if($tmp=='twitter') $this->setTwitter(1);
+        else if($tmp=='instagram') $this->setInstagram(1);
+        return $this;
+    }
     public function setUserID($val):socialmedia
     {
         $this->user_id=$val;
