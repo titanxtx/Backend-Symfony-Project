@@ -77,11 +77,11 @@ class GetData extends AbstractFOSRestController{
      * @QueryParam(name="type",requirements={@Assert\Regex("/^(?:user|email|phone|social)$/mi")},nullable=true,default="user",strict=true,allowBlank=false,description="What area to get")
      * @QueryParam(name="type_id",requirements={@Assert\Regex("/^(?:[1-9]\d*,?)+$/m")},nullable=true,default=NULL,strict=true,allowBlank=false,description="ID number of the type")
      * @QueryParam(name="only",requirements={@Assert\Regex("/^(?:(?:user_id|name|active_status|emails|email_id|email_address|phone_numbers|social_media|updated_date|created_date),?)+$/mi")},nullable=true,strict=true,allowBlank=false,default=null,description="Page number of the result")
-     * @QueryParam(name="page",requirements={@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,strict=true,allowBlank=false,default=1,description="Page number of the result")
-     * @QueryParam(name="amount",requirements={@Assert\Regex("/^\d+$/m"),@Assert\Range(min=1,max=100)},nullable=true,strict=true,allowBlank=false,default=20,description="Amount of results from the page number")
+     * @QueryParam(name="page",requirements={@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,strict=true,allowBlank=false,default=1,description="Page number of the result - 1 or more acceptable")
+     * @QueryParam(name="amount",requirements={@Assert\Regex("/^\d+$/m"),@Assert\Range(min=1,max=100)},nullable=true,strict=true,allowBlank=false,default=20,description="Amount of results from the page number - minimum=1 maximum=100")
      * @QueryParam(name="name",requirements="^(?:[^,]+,?)+$",nullable=true,default=null,strict=true,allowBlank=false,description="name to get users with")
      * @QueryParam(name="sortby",requirements={@Assert\Regex("/^(?:user_id|name|created_date|updated_date|email_amt|phone_amt|social_amt)$/mi")},nullable=true,strict=true,allowBlank=false,default="user_id",description="Sort by what data")
-     * @QueryParam(name="order",requirements="^(asc|desc)$",nullable=true,strict=true,allowBlank=false,default="asc",description="Sort order")
+     * @QueryParam(name="order",requirements="^(asc|desc)$",nullable=true,strict=true,allowBlank=false,default="asc",description="Sort order ascending or descending")
      * @Get("/",name="get_info",methods={"GET"})
      */
     public function get_alldata()//get any data from the tables in the database. A mix of dbal queries and doctrine ORM for stuff other than the users
@@ -185,19 +185,19 @@ class GetData extends AbstractFOSRestController{
  * Get a email with a email id
  * http://localhost:8080/?type=email&type_id=2
  * 
- * Get many emails 
+ * Get many emails with their id
  * http://localhost:8080/?type=email&type_id=1,2,3
  * 
- * Get a phone number
+ * Get a phone number with their id
  * http://localhost:8080/?type=phone&type_id=2
  * 
- * Get many phone numbers
+ * Get many phone numbers with their id
  * http://localhost:8080/?type=phone&type_id=1,2,3
  * 
- * Get a socialmedia
+ * Get a socialmedia with their id
  * http://localhost:8080/?type=social&type_id=2
  * 
- * Get many socialmedias
+ * Get many socialmedias with their id
  * http://localhost:8080/?type=social&type_id=1,2,3
  * 
  */
