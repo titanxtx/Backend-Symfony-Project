@@ -33,21 +33,17 @@ class GetData extends AbstractFOSRestController{
         $entityManager->flush();
         $entityManager->clear();
     }
-    private function get_page(&$start,&$amt)//we set the page number arguments here
+    private function filter_sql(array &$paramx,&$in,&$in2):string //The sql statement is made here
     {
-        $amt=($this->paramfetcher->get('amount')<1)?1:$this->paramfetcher->get('amount');
-        $start=(($this->paramfetcher->get('page')<1)?1:$this->paramfetcher->get('page')-1)*$amt;
-    }
-    private function filter_sql(array &$paramx,&$in,&$in2,int $start,int $amt):string //The sql statement is made here
-    {
+        $start=($paramx['page']-1)*$paramx['amount'];
         $sortingby=['user_id'=>'w.id','active_status'=>'w.active_status','updated_date'=>'updated_date','created_date'=>'created_date','email_amt'=>'JSON_LENGTH(m.emails)','phone_amt'=>'JSON_LENGTH(m.phone)','social_amt'=>'JSON_LENGTH(m.social)']; //used for our sorting parameter for getting sort columns to sort by
-        if(empty($paramx['only'])) return "select JSON_OBJECT('user_id',w.id,'name',w.name,'emails:',m.emails,'phone_numbers',m.phone,'social_media',m.social,'active_status',w.active_status,'updated_date',updated_date,'created_date',created_date) as result from users w left join (select * from (select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$amt}) r left join (select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt}) s on r.idx=s.idz left join (select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt}) t on t.id=s.idz ) m on w.id=m.idx ".((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$amt}";
+        if(empty($paramx['only'])) return "select JSON_OBJECT('user_id',w.id,'name',w.name,'emails:',m.emails,'phone_numbers',m.phone,'social_media',m.social,'active_status',w.active_status,'updated_date',updated_date,'created_date',created_date) as result from users w left join (select * from (select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$paramx['amount']}) r left join (select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$paramx['amount']}) s on r.idx=s.idz left join (select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$paramx['amount']}) t on t.id=s.idz ) m on w.id=m.idx ".((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$paramx['amount']}";
         else {
                 $val=['user_id'=>['type'=>0,'data'=>'w.id'],'name'=>['type'=>0,'data'=>'w.name'],'active_status'=>['type'=>0,'data'=>'w.active_status'],
                 'updated_date'=>['type'=>0,'data'=>'a.updated_date'],'created_date'=>['type'=>0,'data'=>'a.created_date'],
-                'emails'=>['type'=>1,'data'=>'m.emails','table_alias'=>'r','id'=>'idx','join'=>"(select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$amt})"],
-                'phone_numbers'=>['type'=>1,'data'=>'m.phone','table_alias'=>'s','id'=>'idz','join'=>"(select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt})"],
-                'social_media'=>['type'=>1,'data'=>'m.social','table_alias'=>'t','id'=>'id','join'=>"(select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt})"]];//regular columns   check for join columns emails later manually
+                'emails'=>['type'=>1,'data'=>'m.emails','table_alias'=>'r','id'=>'idx','join'=>"(select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$paramx['amount']})"],
+                'phone_numbers'=>['type'=>1,'data'=>'m.phone','table_alias'=>'s','id'=>'idz','join'=>"(select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$paramx['amount']})"],
+                'social_media'=>['type'=>1,'data'=>'m.social','table_alias'=>'t','id'=>'id','join'=>"(select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$paramx['amount']})"]];//regular columns   check for join columns emails later manually
                 $joins=[];
                 $columns=[];
                 $last_index=null;//just the index name
@@ -62,7 +58,7 @@ class GetData extends AbstractFOSRestController{
                         $last_index=$val[$x]['id'];
                     }
                 }
-                $sqlstr= "select JSON_OBJECT(".implode(',',$columns).") as result from users w ".((!empty($joins))?'left join ('.implode(' ',$joins).") m on m.{$last_index}=w.id":'').' '.((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$amt}";
+                $sqlstr= "select JSON_OBJECT(".implode(',',$columns).") as result from users w ".((!empty($joins))?'left join ('.implode(' ',$joins).") m on m.{$last_index}=w.id":'').' '.((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$paramx['amount']}";
                 return $sqlstr;
             }
     }
@@ -78,7 +74,7 @@ class GetData extends AbstractFOSRestController{
      * @QueryParam(name="type_id",requirements={@Assert\Regex("/^(?:[1-9]\d*,?)+$/m")},nullable=true,default=NULL,strict=true,allowBlank=false,description="ID number of the type")
      * @QueryParam(name="only",requirements={@Assert\Regex("/^(?:(?:user_id|name|active_status|emails|email_id|email_address|phone_numbers|social_media|updated_date|created_date),?)+$/mi")},nullable=true,strict=true,allowBlank=false,default=null,description="Page number of the result")
      * @QueryParam(name="page",requirements={@Assert\Regex("/^\d+$/m"),@Assert\GreaterThanOrEqual(1)},nullable=true,strict=true,allowBlank=false,default=1,description="Page number of the result - 1 or more acceptable")
-     * @QueryParam(name="amount",requirements={@Assert\Regex("/^\d+$/m"),@Assert\Range(min=1,max=100)},nullable=true,strict=true,allowBlank=false,default=20,description="Amount of results from the page number - minimum=1 maximum=100")
+     * @QueryParam(name="amount",requirements={@Assert\Regex("/^\d+$/m"),@Assert\Range(min=1,max=200)},nullable=true,strict=true,allowBlank=false,default=20,description="Amount of results from the page number - minimum=1 maximum=200")
      * @QueryParam(name="name",requirements="^(?:[^,]+,?)+$",nullable=true,default=null,strict=true,allowBlank=false,description="name to get users with")
      * @QueryParam(name="sortby",requirements={@Assert\Regex("/^(?:user_id|name|created_date|updated_date|email_amt|phone_amt|social_amt)$/mi")},nullable=true,strict=true,allowBlank=false,default="user_id",description="Sort by what data")
      * @QueryParam(name="order",requirements="^(asc|desc)$",nullable=true,strict=true,allowBlank=false,default="asc",description="Sort order ascending or descending")
@@ -89,7 +85,6 @@ class GetData extends AbstractFOSRestController{
         $type=strtolower($this->paramfetcher->get('type'));
         if($type=='user')
         {
-            $this->get_page($start,$amt);
             $paramx=$this->paramfetcher->all();
             $db_vals=[];
             $in=null;
@@ -97,7 +92,7 @@ class GetData extends AbstractFOSRestController{
             $empty=false;
             if(!empty($paramx['type_id'])) $db_vals=array_merge($db_vals,$this->tbx->split_generate_placeholders($paramx['type_id'],$in));//split and generate placeholders for sql statement   'user_id'
             if(!empty($paramx['name']))  $db_vals=array_merge($db_vals,$this->tbx->split_generate_placeholders($paramx['name'],$in2));
-            $sql=$this->filter_sql($paramx,$in,$in2,$start,$amt);
+            $sql=$this->filter_sql($paramx,$in,$in2);
             $data=$this->tbx->dbcall($sql,$db_vals,$empty,1);
             if(!is_null($data))
             {
