@@ -153,8 +153,8 @@ class GetData extends AbstractFOSRestController{
             {
                 $output['data']=$this->get_tableinformation($ids,function(&$id){
                     $tmp=['social_id'=>null,'user_id'=>null,'social_type'=>null,'social_link'=>null];
-                    $this->get_db('App\Entity\social',$id,function(&$element)use(&$tmp){
-                        $tmp['phone_id']=$element->getID();
+                    $this->get_db('App\Entity\socialmedia',$id,function(&$element)use(&$tmp){
+                        $tmp['social_id']=$element->getID();
                         $tmp['user_id']=$element->getUserID();
                         $tmp['social_type']=$element->getSocialType();
                         $tmp['social_link']=$element->getLink();
@@ -166,3 +166,46 @@ class GetData extends AbstractFOSRestController{
         }
     }
 }
+
+/**
+ * Test----heres some test information   GET REQUEST   -- only parameter applied only to type=user -  pagination is for type=users only right now
+ * 
+ * --for type=user  sortby can be user_id,name,created_date,updated_date,email_amt,phone_amt, or social_amt along with parameter order can be asc or desc, default is asc aka ascending
+ * 
+ * Get a user
+ * http://localhost:8080/?type=user&type_id=2
+ * 
+ * Get all users information
+ * http://localhost:8080/
+ * 
+ * Get only certain user information 
+ * http://localhost:8080/?type=user&type_id=2&only=name,user_id,emails
+ * 
+ * Get multiple users information but only certain things from them 
+ * http://localhost:8080/?type=user&type_id=1,2,3,4&only=name,user_id,emails
+ * 
+ * Get multiple users information but only certain things from them   -- with pagination--
+ * http://localhost:8080/?type=user&type_id=1,2,3,4&only=name,user_id,emails&page=1&amount=2
+ * 
+ * Get a email from a email id
+ * http://localhost:8080/?type=email&type_id=2
+ * 
+ * Get many emails from a email id
+ * http://localhost:8080/?type=email&type_id=1,2,3
+ * 
+ * Get a phone number from a email id
+ * http://localhost:8080/?type=phone&type_id=2
+ * 
+ * Get many phone number from a email id
+ * http://localhost:8080/?type=phone&type_id=1,2,3
+ * 
+ * Get a socialmedia from a email id
+ * http://localhost:8080/?type=social&type_id=2
+ * 
+ * Get many socialmedia from a email id
+ * http://localhost:8080/?type=social&type_id=1,2,3
+ * 
+ */
+
+
+ ?>

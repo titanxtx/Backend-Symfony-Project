@@ -11,12 +11,11 @@ class validminValidator extends ConstraintValidator{
     {
         if(!(is_numeric($value)&&intval($value)>=$constraint->minimum))
         {
-            var_dump("CRASH THIS");
+     
             throw new UnexpectedValueException($value,'string');
            // $this->setMessage($constraint->message, array('%string%' => $value));
         }
         else{
-            var_dump("GOOD");
             return true;
         }
     }

@@ -10,8 +10,6 @@ class validmin extends Constraint{
     public $message="Value is below or not a number";
     function __construct(array $val)
     {
-        
-        //var_dump('DUMP1',$val);
         $this->minimum=$val['value'];
     }
 }

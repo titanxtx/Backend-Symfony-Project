@@ -2,17 +2,13 @@
 namespace App\Controller;
 
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-
+/*
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Annotation\Route;*/
 use FOS\RestBundle\Controller\Annotations\QueryParam;
-
 use FOS\RestBundle\Request\ParamFetcherInterface;
-use FOS\RestBundle\Controller\Annotations\View;
-use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Post;
-use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
-use App\Service\toolbox;
+//use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,11 +18,8 @@ use App\Entity\phonenumber;
 use App\Entity\socialmedia;
 
 class InsertData extends AbstractFOSRestController{
-
-    private $tbx;
     private $paramfetcher;
-    function __construct(toolbox $tb, ParamFetcherInterface $paramfetcher){
-        $this->tbx=$tb;
+    function __construct( ParamFetcherInterface $paramfetcher){
         $this->paramfetcher=$paramfetcher;
     }
     private function insert_any($obj)
@@ -98,5 +91,18 @@ class InsertData extends AbstractFOSRestController{
         ]));
     }
 }
-
+/**
+ * Test----heres some test information   POST REQUEST
+ * new user
+ * http://localhost:8080/?type=user&email=kevin3@123.321&name=Kevin3&phone=322-432-5433&social_type=Twitter&social_link=http://www.twitter.com/test103
+ * 
+ * new email
+ * http://localhost:8080/?type=email&email=testing1@test.test&user_id=2
+ * 
+ * new phone
+ * http://localhost:8080/?type=phone&phone=932-323-5432&user_id=2
+ * 
+ * new social
+ * http://localhost:8080/?type=social&user_id=2&social_type=instagram&social_link=http://www.instagram.com/testz
+ */
 ?>

@@ -69,7 +69,7 @@ class ReplaceData extends AbstractFOSRestController{
             if(empty($this->paramfetcher->get('email'))) throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
             $this->update_db('App\Entity\email',$this->paramfetcher->get('type_id'),function(&$element){
                 $element->setEmail($this->paramfetcher->get('email'));
-                $this->update_db('App\Entity\user',$element->getUserID,function(&$element){
+                $this->update_db('App\Entity\user',$element->getUserID(),function(&$element){
                     $element->setUpdatedDate(new \DateTime("now"));
                 });
             });
@@ -80,7 +80,7 @@ class ReplaceData extends AbstractFOSRestController{
             if(empty($this->paramfetcher->get('phone'))) throw new HttpException(400, "One parameter at least for user has to be set or some of your parameters are invalid");
             $this->update_db('App\Entity\phonenumber',$this->paramfetcher->get('type_id'),function(&$element){
                 $element->setPhone($this->paramfetcher->get('phone'));
-                $this->update_db('App\Entity\user',$element->getUserID,function(&$element){
+                $this->update_db('App\Entity\user',$element->getUserID(),function(&$element){
                     $element->setUpdatedDate(new \DateTime("now"));
                 });
             });
@@ -107,7 +107,7 @@ class ReplaceData extends AbstractFOSRestController{
                     $element->setInstagram(1);
                 }
                 $element->setLink($this->paramfetcher->get('social_link'));
-                $this->update_db('App\Entity\user',$element->getUserID,function(&$element){
+                $this->update_db('App\Entity\user',$element->getUserID(),function(&$element){
                     $element->setUpdatedDate(new \DateTime("now"));
                 });
             });
@@ -119,3 +119,21 @@ class ReplaceData extends AbstractFOSRestController{
         ]));
     }
 }
+
+/* -PUT request- - type_id is the id column of the table of users or user_emails or user_phone
+ *  update user by user id
+ * http://localhost:8080/?type=user&type_id=1&name=Frank      ---changing name
+ * http://localhost:8080/?type=user&type_id=1&active_status=1      ---changing active_status
+ * 
+ * 
+ *  update email by email id
+ * http://localhost:8080/?type=email&type_id=1&email=test@test.test
+ *  update phone by phone number id
+ * http://localhost:8080/?type=phone&type_id=1&phone=231-432-5431
+ * 
+ *  update social by social media info by id
+ * http://localhost:8080/?type=social&type_id=1&social_type=facebook&social_link=http://www.facebook.com/test123321
+*/
+
+
+?>

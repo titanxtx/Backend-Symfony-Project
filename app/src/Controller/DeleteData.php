@@ -75,3 +75,16 @@ class DeleteData extends AbstractFOSRestController{
         ]));
     }
 }
+
+/** -- DELETE request
+ *  delete user by user id
+ * http://localhost:8080/?type=user&type_id=1
+ *  delete email by email id
+ * http://localhost:8080/?type=email&type_id=1
+ *  delete phone number by phone number id
+ * http://localhost:8080/?type=phone&type_id=1
+ *  delete social media by social media info by id
+ * http://localhost:8080/?type=social&type_id=1
+ */
+
+?>

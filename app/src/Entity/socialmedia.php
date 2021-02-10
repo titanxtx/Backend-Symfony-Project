@@ -81,7 +81,7 @@ class socialmedia{
     }
     public function getSocialType():string{
         if($this->instagram==1) return 'Instagram';
-        return ($this->Facebook==1)?'Facebook':'Twitter';
+        return ($this->facebook==1)?'Facebook':'Twitter';
     }
     public function getLink():string
     {
