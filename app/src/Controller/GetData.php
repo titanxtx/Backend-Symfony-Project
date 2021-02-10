@@ -46,34 +46,32 @@ class GetData extends AbstractFOSRestController{
     }
     private function filter_sql(array &$paramx,&$in,&$in2,int $start,int $amt):string //The sql statement is made here
     {
-        $sortingby=['user_id'=>'w.id','active_status'=>'w.active_status','updated_date'=>'updated_date','created_date'=>'created_date','email_amt'=>'JSON_LENGTH(m.emails)','phone_amt'=>'JSON_LENGTH(m.phone)','social_amt'=>'JSON_LENGTH(m.social)'];//name|created_date|updated_date|email_amt|phone_amt|social_amt']
-
-    //"select (z.result) as result from (select JSON_OBJECT('user_id',w.id,'name',w.name,'emails:',m.emails,'phone_numbers',m.phone,'social_media',m.social,'active_status',w.active_status,'updated_date',updated_date,'created_date',created_date) as result from users w left join (select * from (select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc ) r left join (select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc) s on r.idx=s.idz left join (select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc) t on t.id=s.idz ) m on w.id=m.idx order by w.id asc limit {$start},{$amt}) z";
-    if(empty($paramx['only'])) return "select (z.result) as result from (select JSON_OBJECT('user_id',w.id,'name',w.name,'emails:',m.emails,'phone_numbers',m.phone,'social_media',m.social,'active_status',w.active_status,'updated_date',updated_date,'created_date',created_date) as result from users w left join (select * from (select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$amt}) r left join (select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt}) s on r.idx=s.idz left join (select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt}) t on t.id=s.idz ) m on w.id=m.idx ".((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$amt}) z";
-    else {
-            $val=['user_id'=>['type'=>0,'data'=>'w.id'],'name'=>['type'=>0,'data'=>'w.name'],'active_status'=>['type'=>0,'data'=>'w.active_status'],
-            'updated_date'=>['type'=>0,'data'=>'a.updated_date'],'created_date'=>['type'=>0,'data'=>'a.created_date'],
-            'emails'=>['type'=>1,'data'=>'m.emails','table_alias'=>'r','id'=>'idx','join'=>"(select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$amt})"],
-            'phone_numbers'=>['type'=>1,'data'=>'m.phone','table_alias'=>'s','id'=>'idz','join'=>"(select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt})"],
-            'social_media'=>['type'=>1,'data'=>'m.social','table_alias'=>'t','id'=>'id','join'=>"(select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt})"]];//regular columns   check for join columns emails later manually
-            $joins=[];
-            $columns=[];
-            $last_index=null;
-            $last_join_id=null;
-            foreach(explode(',',$paramx['only']) as $x)//we are getting the keys of the only parameter
-            {
-                array_push($columns,"'{$x}',{$val[$x]['data']}");
-                 if($val[$x]['type']==1)
-                 {
-                    array_push($joins,((count($joins)==0)?'select * from ':' left join ').$val[$x]['join']." {$val[$x]['table_alias']}".((!is_null($last_join_id))?" on {$val[$x]['table_alias']}.{$val[$x]['id']}={$last_join_id}":''));//creating our join columns
-                    $last_join_id="{$val[$x]['table_alias']}.{$val[$x]['id']}";
-                    $last_index=$val[$x]['id'];
-                 }
-                
+        $sortingby=['user_id'=>'w.id','active_status'=>'w.active_status','updated_date'=>'updated_date','created_date'=>'created_date','email_amt'=>'JSON_LENGTH(m.emails)','phone_amt'=>'JSON_LENGTH(m.phone)','social_amt'=>'JSON_LENGTH(m.social)']; //used for our sorting parameter for getting sort columns to sort by
+        if(empty($paramx['only'])) return "select JSON_OBJECT('user_id',w.id,'name',w.name,'emails:',m.emails,'phone_numbers',m.phone,'social_media',m.social,'active_status',w.active_status,'updated_date',updated_date,'created_date',created_date) as result from users w left join (select * from (select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$amt}) r left join (select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt}) s on r.idx=s.idz left join (select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt}) t on t.id=s.idz ) m on w.id=m.idx ".((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$amt}";
+        else {
+                $val=['user_id'=>['type'=>0,'data'=>'w.id'],'name'=>['type'=>0,'data'=>'w.name'],'active_status'=>['type'=>0,'data'=>'w.active_status'],
+                'updated_date'=>['type'=>0,'data'=>'a.updated_date'],'created_date'=>['type'=>0,'data'=>'a.created_date'],
+                'emails'=>['type'=>1,'data'=>'m.emails','table_alias'=>'r','id'=>'idx','join'=>"(select a.id as idx,if(count(b.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('email_id',b.id,'email',b.email))) as emails from users a left join user_emails b on a.id=b.user_id group by a.id,a.name,b.user_id order by a.id asc limit {$start},{$amt})"],
+                'phone_numbers'=>['type'=>1,'data'=>'m.phone','table_alias'=>'s','id'=>'idz','join'=>"(select c.id as idz,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('phone_id',d.id,'phone_number',d.phonenumber))) as phone from users c left join user_phone d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt})"],
+                'social_media'=>['type'=>1,'data'=>'m.social','table_alias'=>'t','id'=>'id','join'=>"(select c.id,if(count(d.id)=0,JSON_ARRAY(),JSON_ARRAYAGG(JSON_OBJECT('social_id',d.id,'socialmedia_type',if(d.facebook=1,'Facebook',if(d.twitter=1,'Twitter','Instagram')),'socialmedia_link',d.link))) as social from users c left join user_socialmedia d on c.id=d.user_id group by c.id,c.name,d.user_id order by c.id asc limit {$start},{$amt})"]];//regular columns   check for join columns emails later manually
+                $joins=[];
+                $columns=[];
+                $last_index=null;//just the index name
+                $last_join_id=null;//table name + index name
+                foreach(explode(',',$paramx['only']) as $x)//we are getting the keys of the only parameter
+                {
+                    array_push($columns,"'{$x}',{$val[$x]['data']}");
+                    if($val[$x]['type']==1)
+                    {
+                        array_push($joins,((count($joins)==0)?'select * from ':' left join ').$val[$x]['join']." {$val[$x]['table_alias']}".((!is_null($last_join_id))?" on {$val[$x]['table_alias']}.{$val[$x]['id']}={$last_join_id}":''));//creating our join columns
+                        $last_join_id="{$val[$x]['table_alias']}.{$val[$x]['id']}";
+                        $last_index=$val[$x]['id'];
+                    }
+                    
+                }
+                $sqlstr= "select JSON_OBJECT(".implode(',',$columns).") as result from users w ".((!empty($joins))?'left join ('.implode(' ',$joins).") m on m.{$last_index}=w.id":'').' '.((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$amt}";
+                return $sqlstr;
             }
-            $sqlstr= "select (z.result) as result from (select JSON_OBJECT(".implode(',',$columns).") as result from users w ".((!empty($joins))?'left join ('.implode(' ',$joins).") m on m.{$last_index}=w.id":'').' '.((!empty($in)||!empty($in2))?" where ":" ").((!empty($in))?"w.id in (".$in.")":"").((!empty($in)&&!empty($in2))?' or':'').((!empty($in2))?' w.name in ('.$in2.')':'')." order by {$sortingby[$paramx['sortby']]} {$paramx['order']} limit {$start},{$amt}".') z';
-            return $sqlstr;
-        }
     }
     private function get_tableinformation($ids,$func)
     {

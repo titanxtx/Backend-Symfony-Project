@@ -31,7 +31,7 @@ class toolbox {
             'email'=>[new Assert\NotNull(),new Assert\NotBlank(),new Assert\Email(['message'=>'The email "{{ value }}" is not a valid email.'])]
         ],'allowMissingFields'=>true,'allowExtraFields'=>false]);
     }
-    public function dbcall($sql,$args=[],$mode=0,$code=null)
+    public function dbcall($sql,$args=[],$mode=0,$code=null)//call the database here, get the information and decode the json
     {
         try{
             $statement=$this->connection->prepare($sql);
@@ -45,97 +45,23 @@ class toolbox {
             return null;
         }
     }
-    private function getJSONData($stmt):array
+    private function getJSONData($stmt):array//get json information from the database results
     {
         $data=[];
         while(($row=$stmt->fetch())!=false)
         {
-            array_push($data,json_decode($row['result'],true));
+            array_push($data,json_decode($row['result'],true));//decoding the json information recursively since there is nested information
         }
         return $data;
     }
-    public function split_generate_placeholders(string $val,&$placeholders,$delimiter=','):array
+    public function split_generate_placeholders(string $val,&$placeholders,$delimiter=','):array //create sql question mark placeholders so we can enter in data dynamically safely
     {
         $tmp=explode($delimiter,$val);
         $placeholders=(!is_null($tmp)&&!empty($tmp)&&is_array($tmp))?str_repeat('?,', count($tmp) - 1) . '?':'';
         return $tmp;
     }
-    public function validate_params($data)
+    public function validate_params($data)// validate information with our class memeber contraints variable - constraint_data
     {
         return $this->validator->validate($data,$this->constraint_data);
     }
-/*
-    public function validate_user($data)
-    {
-        $user=new Assert\Collection(['fields'=>[
-            'active_status'=>new Assert\Optional([new Assert\NotNull(),new Assert\NotBlank(),new Assert\Range(['min'=>0,'max'=>1,'notInRangeMessage' => 'The amount {{value}} is invalid. The amount should be equal to or between {{ min }} and {{ max }}.'])]),
-            'phone_numbers'=>new Assert\Optional([new Assert\Optional([new Assert\AtLeastOneOf(['constraints'=>[
-                    [
-                        new Assert\Type('array'),
-                        new Assert\All(['constraints'=>[
-                            new Assert\NotNull(),
-                            new Assert\NotBlank()
-                            ]
-                        ])
-                    ],
-                    [
-                        new Assert\Type('string'),
-                        new Assert\NotNull(),
-                        new Assert\NotBlank()
-                    ]
-                ]])])]),
-            'emails'=>
-                new Assert\Optional([new Assert\AtLeastOneOf(['constraints'=>[
-                    [
-                        new Assert\Type('array'),
-                        new Assert\All(['constraints'=>[
-                            new Assert\NotNull(),
-                            new Assert\NotBlank(),
-                            new Assert\Email()
-                            ]
-                        ])
-                    ],
-                    [
-                        new Assert\Type('string'),
-                        new Assert\NotNull(),
-                        new Assert\NotBlank(),
-                        new Assert\Email()
-                    ]
-                ]])]),
-                'socialmedia'=>new Assert\Optional([new Assert\AtLeastOneOf(['constraints'=>[
-                    [
-                        new Assert\Type('array'),
-                        new Assert\All(['constraints'=>[
-                            new Assert\Collection(['fields'=>[
-                                'type'=>[new Assert\NotNull(),new Assert\Type('string'),new Assert\NotBlank(),new Assert\Regex("/^(?:facebook|twitter|instagram)$/mi")],
-                                'link'=>[new Assert\NotNull(),new Assert\Type('string'),new Assert\NotBlank(),new Assert\Url()]
-                            ]])
-                            ]
-                        ])
-                    ],
-                    [
-                        new Assert\Collection(['fields'=>[
-                            'type'=>[new Assert\NotNull(),new Assert\Type('string'),new Assert\NotBlank(),new Assert\Regex("/^(?:facebook|twitter|instagram)$/mi")],
-                            'link'=>[new Assert\NotNull(),new Assert\Type('string'),new Assert\NotBlank(),new Assert\Url()]
-                        ]])
-                    ]
-                ]])]),
-            'updated_date'=>new Assert\Optional([[new Assert\Type('string'),new Assert\NotNull(),
-            new Assert\NotBlank()]]),
-            'created_date'=>new Assert\Optional([[new Assert\Type('string'),new Assert\NotNull(),
-            new Assert\NotBlank()]]),
-        ],'allowMissingFields'=>true,'allowExtraFields'=>true]);
-
-        $body=new Assert\Collection(['fields'=>[
-            'user'=>[
-            new Assert\AtLeastOneOf(['constraints'=>[
-                [new Assert\Type('array'),
-                new Assert\All(['constraints'=>[$user]])],
-                $user
-            ]]),
-            ]],'allowExtraFields'=>true,'allowMissingFields'=>false]);
-
-        $constraint=new Assert\AtLeastOneOf(['constraints'=>[[new Assert\Type('array'),new Assert\All(['constraints'=>$body])],$body]]);
-        return $this->validator->validate($data,$constraint);
-    }*/
 }
